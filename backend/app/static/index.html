@@ -1,0 +1,1190 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sentinel AI - Review Authenticity Verification Engine</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            display: ['Outfit', 'sans-serif'],
+          },
+          boxShadow: {
+            'premium': '0 2px 8px -1px rgba(0, 0, 0, 0.04), 0 1px 3px -1px rgba(0, 0, 0, 0.02)',
+            'premium-hover': '0 12px 20px -8px rgba(79, 70, 229, 0.08), 0 4px 12px -2px rgba(0, 0, 0, 0.03)',
+            'premium-card': '0 4px 16px -2px rgba(0, 0, 0, 0.03), 0 2px 6px -1px rgba(0, 0, 0, 0.02)',
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      background-color: #fafafa;
+      background-image: radial-gradient(#e4e4e7 1.2px, transparent 1.2px);
+      background-size: 20px 20px;
+    }
+    .scrollbar-hide::-webkit-scrollbar {
+      display: none;
+    }
+    .scrollbar-hide {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+    .card-transition {
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+  </style>
+</head>
+<body class="h-full flex flex-col overflow-hidden text-slate-800 antialiased">
+
+  <!-- Header Navigation -->
+  <header class="border-b border-slate-200/80 bg-white/90 backdrop-blur-md px-8 py-4 flex items-center justify-between shrink-0 shadow-sm z-10">
+    <div class="flex items-center gap-4">
+      <div class="bg-indigo-600 p-2.5 rounded-xl text-white shadow-sm hover:scale-105 transition-transform duration-300">
+        <i data-lucide="shield-check" class="w-5.5 h-5.5"></i>
+      </div>
+      <div>
+        <h1 class="text-lg font-bold tracking-tight text-slate-900 font-display flex items-center gap-2">
+          SENTINEL AI
+          <span class="text-[10px] bg-indigo-50 text-indigo-700 border border-indigo-200/60 px-2 py-0.5 rounded-md font-semibold uppercase tracking-wider font-sans">
+            Multi-Agent
+          </span>
+        </h1>
+        <p class="text-[11px] text-slate-500 font-medium">Review Authenticity Verification Engine</p>
+      </div>
+    </div>
+    
+    <div class="flex items-center gap-4">
+      <div class="flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-emerald-50 border border-emerald-200/50 text-xs font-semibold text-emerald-800">
+        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+        <span>Verification System Online</span>
+      </div>
+      <button onclick="refreshData()" class="p-2 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors border border-slate-200/60 bg-white shadow-sm flex items-center gap-1.5 text-xs font-semibold">
+        <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+        <span>Sync</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Workspace -->
+  <div class="flex flex-1 overflow-hidden">
+    <!-- Sidebar -->
+    <aside class="w-64 border-r border-slate-200/80 bg-white/70 backdrop-blur-md flex flex-col py-6 px-4 shrink-0 justify-between">
+      <nav class="space-y-1.5">
+        <button onclick="showTab('dashboard')" id="btn-tab-dashboard" class="w-full flex items-center gap-3 px-3.5 py-2.5 text-sm font-semibold rounded-lg text-indigo-700 bg-indigo-50 border border-indigo-200/40 transition-all duration-200">
+          <i data-lucide="layout-dashboard" class="w-4.5 h-4.5"></i>
+          Overview Dashboard
+        </button>
+        <button onclick="showTab('moderator')" id="btn-tab-moderator" class="w-full flex items-center gap-3 px-3.5 py-2.5 text-sm font-medium rounded-lg text-slate-655 hover:text-slate-900 hover:bg-slate-100/70 border border-transparent transition-all duration-200">
+          <i data-lucide="scale" class="w-4.5 h-4.5"></i>
+          Moderation Queue
+        </button>
+        <button onclick="showTab('simulator')" id="btn-tab-simulator" class="w-full flex items-center gap-3 px-3.5 py-2.5 text-sm font-medium rounded-lg text-slate-655 hover:text-slate-900 hover:bg-slate-100/70 border border-transparent transition-all duration-200">
+          <i data-lucide="terminal" class="w-4.5 h-4.5"></i>
+          Simulation Sandbox
+        </button>
+        <button onclick="showTab('audit')" id="btn-tab-audit" class="w-full flex items-center gap-3 px-3.5 py-2.5 text-sm font-medium rounded-lg text-slate-655 hover:text-slate-900 hover:bg-slate-100/70 border border-transparent transition-all duration-200">
+          <i data-lucide="file-key" class="w-4.5 h-4.5"></i>
+          Audit Logs
+        </button>
+      </nav>
+      
+      <!-- System Info Footer -->
+      <div class="px-3 py-4 bg-slate-50 border border-slate-200/50 rounded-xl text-[11px] text-slate-500 font-medium space-y-1.5">
+        <div class="flex items-center justify-between">
+          <span>Database:</span>
+          <span class="font-mono text-slate-700 bg-white border border-slate-200 px-1 rounded">SQLite (WAL)</span>
+        </div>
+        <div class="flex items-center justify-between">
+          <span>Response Target:</span>
+          <span class="text-slate-700 font-semibold">&lt; 3.0s</span>
+        </div>
+        <div class="flex items-center justify-between">
+          <span>Accuracy Target:</span>
+          <span class="text-slate-700 font-semibold">&ge; 85%</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Content Area -->
+    <main class="flex-1 flex flex-col overflow-y-auto p-8">
+      
+      <!-- ==================== DASHBOARD TAB ==================== -->
+      <section id="tab-dashboard" class="space-y-8">
+        <!-- Stats Summary Row -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+          <div class="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-premium card-transition hover:shadow-premium-hover">
+            <div class="flex justify-between items-start text-slate-500">
+              <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Total Verified Reviews</span>
+              <span class="p-2 bg-indigo-50 text-indigo-600 rounded-lg"><i data-lucide="list-check" class="w-4 h-4"></i></span>
+            </div>
+            <div class="mt-4 flex items-baseline gap-2">
+              <span id="stat-total" class="text-3xl font-bold tracking-tight text-slate-900 font-display">-</span>
+            </div>
+          </div>
+          
+          <div class="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-premium card-transition hover:shadow-premium-hover">
+            <div class="flex justify-between items-start text-slate-500">
+              <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Fake Reviews Blocked</span>
+              <span class="p-2 bg-red-50 text-red-655 rounded-lg border border-red-100/50"><i data-lucide="shield-alert" class="w-4 h-4"></i></span>
+            </div>
+            <div class="mt-4 flex items-baseline gap-2">
+              <span id="stat-rejected" class="text-3xl font-bold tracking-tight text-slate-900 font-display">-</span>
+              <span class="text-xs text-red-600 font-semibold bg-red-50 border border-red-100 rounded-md px-1.5 py-0.5" id="stat-rejected-percent">-%</span>
+            </div>
+          </div>
+          
+          <div class="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-premium card-transition hover:shadow-premium-hover">
+            <div class="flex justify-between items-start text-slate-500">
+              <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Manual Flags Pending</span>
+              <span class="p-2 bg-amber-50 text-amber-600 rounded-lg border border-amber-100/50"><i data-lucide="eye" class="w-4 h-4"></i></span>
+            </div>
+            <div class="mt-4 flex items-baseline gap-2">
+              <span id="stat-manual" class="text-3xl font-bold tracking-tight text-slate-900 font-display">-</span>
+              <span class="text-[11px] text-slate-400 font-semibold uppercase tracking-wide">Pending Override</span>
+            </div>
+          </div>
+          
+          <div class="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-premium card-transition hover:shadow-premium-hover">
+            <div class="flex justify-between items-start text-slate-500">
+              <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Estimated Merchant Savings</span>
+              <span class="p-2 bg-emerald-50 text-emerald-600 rounded-lg border border-emerald-100/50"><i data-lucide="dollar-sign" class="w-4 h-4"></i></span>
+            </div>
+            <div class="mt-4 flex items-baseline gap-2">
+              <span id="stat-savings" class="text-3xl font-bold tracking-tight text-emerald-600 font-display">-</span>
+              <span class="text-[11px] text-slate-400 font-semibold uppercase tracking-wide">Saved (at $100/each)</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Analytical Charts Row -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <!-- Trends -->
+          <div class="lg:col-span-2 bg-white border border-slate-200/80 rounded-2xl p-6 shadow-premium flex flex-col h-[340px]">
+            <h3 class="text-sm font-bold text-slate-800 mb-4 font-display flex items-center gap-2">
+              <i data-lucide="trending-up" class="w-4 h-4 text-indigo-500"></i>
+              Fraud Mitigation Activity (7-Day Trend)
+            </h3>
+            <div class="flex-1 min-h-0 relative">
+              <canvas id="chart-trends"></canvas>
+            </div>
+          </div>
+          <!-- Category Heatmap -->
+          <div class="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-premium flex flex-col h-[340px]">
+            <h3 class="text-sm font-bold text-slate-800 mb-4 font-display flex items-center gap-2">
+              <i data-lucide="pie-chart" class="w-4 h-4 text-indigo-500"></i>
+              Fraud Heatmap - Category Risk
+            </h3>
+            <div class="flex-1 min-h-0 relative flex justify-center items-center">
+              <canvas id="chart-categories"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- Heatmaps Summary Row -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <!-- High risk products -->
+          <div class="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-premium">
+            <div class="flex items-center justify-between mb-4 pb-2 border-b border-slate-100">
+              <h3 class="text-sm font-bold text-slate-800 flex items-center gap-2 font-display">
+                <i data-lucide="package-x" class="w-4.5 h-4.5 text-red-500"></i> High-Risk Target Products
+              </h3>
+              <span class="text-[10px] bg-red-50 text-red-700 px-2 py-0.5 rounded-md font-bold border border-red-100">Top Flags</span>
+            </div>
+            <div class="divide-y divide-slate-100" id="list-high-risk-products">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+          
+          <!-- Suspicious users / autoban -->
+          <div class="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-premium">
+            <div class="flex items-center justify-between mb-4 pb-2 border-b border-slate-100">
+              <h3 class="text-sm font-bold text-slate-800 flex items-center gap-2 font-display">
+                <i data-lucide="user-x" class="w-4.5 h-4.5 text-red-500"></i> Auto-Banned Suspicious Reviewers
+              </h3>
+              <span class="text-[10px] bg-slate-100 text-slate-700 px-2 py-0.5 rounded-md font-bold border border-slate-200" id="stat-banned-count">
+                - Banned
+              </span>
+            </div>
+            <div class="divide-y divide-slate-100" id="list-suspicious-users">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent Logs in Brief -->
+        <div class="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-premium">
+          <h3 class="text-sm font-bold text-slate-800 mb-4 flex items-center gap-2 font-display">
+            <i data-lucide="activity" class="w-4.5 h-4.5 text-indigo-500"></i> Real-Time Flagged Activity Log
+          </h3>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs text-slate-700 border-collapse">
+              <thead>
+                <tr class="bg-slate-50 border-b border-slate-200/80 text-slate-500 font-bold">
+                  <th class="p-3">Review ID</th>
+                  <th class="p-3">Verdict</th>
+                  <th class="p-3">Risk Score</th>
+                  <th class="p-3">Linguistic Summary</th>
+                  <th class="p-3 text-right">Timestamp</th>
+                </tr>
+              </thead>
+              <tbody id="table-recent-flags" class="divide-y divide-slate-150">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== MODERATOR TAB ==================== -->
+      <section id="tab-moderator" class="space-y-6 hidden">
+        <div class="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-premium">
+          <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 pb-4 border-b border-slate-150">
+            <div>
+              <h2 class="text-base font-bold text-slate-900 font-display">Review Moderation Queue</h2>
+              <p class="text-xs text-slate-400 mt-1 font-medium">Verify flagged review submissions and apply human override overrides.</p>
+            </div>
+            <!-- Filters -->
+            <div class="flex flex-wrap gap-1.5 text-[11px] font-semibold">
+              <button onclick="filterQueue('ALL')" id="filter-btn-ALL" class="px-3 py-1.5 rounded-lg bg-indigo-50 border border-indigo-200/60 text-indigo-700 shadow-sm transition-all duration-150">All Items</button>
+              <button onclick="filterQueue('MANUAL_REVIEW')" id="filter-btn-MANUAL_REVIEW" class="px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 shadow-sm transition-all duration-150">Manual Flags</button>
+              <button onclick="filterQueue('REJECT')" id="filter-btn-REJECT" class="px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 shadow-sm transition-all duration-150">Rejected</button>
+              <button onclick="filterQueue('APPROVE')" id="filter-btn-APPROVE" class="px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 shadow-sm transition-all duration-150">Approved</button>
+            </div>
+          </div>
+
+          <div class="overflow-hidden border border-slate-200 rounded-xl bg-white shadow-sm">
+            <table class="w-full text-left text-xs text-slate-700 border-collapse">
+              <thead>
+                <tr class="bg-slate-50 border-b border-slate-200/80 text-slate-500 font-bold">
+                  <th class="p-4">Review Content</th>
+                  <th class="p-4">User Info</th>
+                  <th class="p-4">Product ID</th>
+                  <th class="p-4">Verdict</th>
+                  <th class="p-4">Confidence</th>
+                  <th class="p-4 text-right">Inspect</th>
+                </tr>
+              </thead>
+              <tbody id="table-moderation-queue" class="divide-y divide-slate-100">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== SIMULATOR TAB ==================== -->
+      <section id="tab-simulator" class="grid grid-cols-1 lg:grid-cols-3 gap-8 hidden">
+        <!-- Input Sandbox -->
+        <div class="lg:col-span-1 flex flex-col gap-6">
+          <div class="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-premium flex flex-col h-full justify-between gap-6">
+            <div class="space-y-4">
+              <h2 class="text-base font-bold text-slate-900 font-display flex items-center gap-2">
+                <i data-lucide="test-tube" class="text-indigo-500"></i> Review Defamation Simulator
+              </h2>
+              <p class="text-xs text-slate-400 font-medium">Inject scenarios to test parallel processing across agent execution paths in real time.</p>
+              
+              <!-- Attack Preset dropdown -->
+              <div class="space-y-1.5">
+                <label class="text-[11px] font-bold text-slate-400 uppercase tracking-wide">Preset Scenarios</label>
+                <select id="sim-preset" onchange="loadPreset()" class="w-full rounded-lg bg-slate-50 border border-slate-200 text-xs px-3 py-2.5 text-slate-800 focus:outline-none focus:border-indigo-500 shadow-sm font-semibold">
+                  <option value="">Custom Payload (Start Clean)</option>
+                  <option value="genuine">Genuine Verified purchase (Real)</option>
+                  <option value="bot_spam">Bot Storm Attack (Fake)</option>
+                  <option value="competitor">Competitor 1-Star Defamation (Fake)</option>
+                  <option value="boosting">Merchant 5-Star Promo Boosting (Fake)</option>
+                  <option value="safe_mode">Agent Timeout Sandbox (Safe Mode Fallback)</option>
+                </select>
+              </div>
+
+              <!-- Input text -->
+              <div class="space-y-1.5">
+                <label class="text-[11px] font-bold text-slate-400 uppercase tracking-wide">User ID</label>
+                <input type="text" id="sim-user" placeholder="e.g., usr_reviewer" class="w-full rounded-lg bg-slate-50 border border-slate-200 text-xs px-3 py-2 focus:outline-none focus:border-indigo-500 shadow-sm font-medium">
+              </div>
+              <div class="space-y-1.5">
+                <label class="text-[11px] font-bold text-slate-400 uppercase tracking-wide">Product ID</label>
+                <input type="text" id="sim-product" placeholder="e.g., prod_iphone" class="w-full rounded-lg bg-slate-50 border border-slate-200 text-xs px-3 py-2 focus:outline-none focus:border-indigo-500 shadow-sm font-medium">
+              </div>
+              <div class="space-y-1.5">
+                <label class="text-[11px] font-bold text-slate-400 uppercase tracking-wide">Review Text</label>
+                <textarea id="sim-text" rows="4" placeholder="Write review details..." class="w-full rounded-lg bg-slate-50 border border-slate-200 text-xs px-3 py-2.5 text-slate-800 focus:outline-none focus:border-indigo-500 shadow-sm font-medium"></textarea>
+              </div>
+              <div class="space-y-1.5">
+                <label class="text-[11px] font-bold text-slate-400 uppercase tracking-wide">Star Rating</label>
+                <select id="sim-rating" class="w-full rounded-lg bg-slate-50 border border-slate-200 text-xs px-3 py-2 text-slate-800 focus:outline-none focus:border-indigo-500 shadow-sm font-semibold">
+                  <option value="5">5 Stars ⭐⭐⭐⭐⭐</option>
+                  <option value="4">4 Stars ⭐⭐⭐⭐</option>
+                  <option value="3">3 Stars ⭐⭐⭐</option>
+                  <option value="2">2 Stars ⭐⭐</option>
+                  <option value="1">1 Star ⭐</option>
+                </select>
+              </div>
+            </div>
+
+            <button onclick="runSimulation()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl text-xs tracking-wider uppercase transition-all shadow-sm flex items-center justify-center gap-2">
+              <i data-lucide="play" class="w-3.5 h-3.5 fill-current"></i> Launch Verification Process
+            </button>
+          </div>
+        </div>
+
+        <!-- Simulation visual logs & Execution Replay -->
+        <div class="lg:col-span-2 flex flex-col gap-6">
+          <!-- Live Agent Visualizer -->
+          <div class="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-premium flex flex-col h-[280px]">
+            <h3 class="text-sm font-bold text-slate-900 mb-4 flex items-center gap-2 font-display">
+              <i data-lucide="cpu" class="text-indigo-500"></i> Parallel Agent Orchestration
+            </h3>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 h-full relative" id="agent-visualizer-container">
+              <!-- Visual Card: Credibility -->
+              <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 flex flex-col justify-between shadow-sm hover:border-slate-350 transition-colors" id="agent-card-credibility">
+                <div class="flex justify-between items-start">
+                  <span class="text-xs font-bold text-slate-700">Credibility Agent</span>
+                  <div class="agent-pulse w-2.5 h-2.5 rounded-full bg-slate-300"></div>
+                </div>
+                <div class="text-center py-4 text-xs text-slate-400 font-semibold" id="agent-msg-credibility">Idle. Waiting...</div>
+                <div class="h-1.5 bg-slate-200/50 w-full rounded-full overflow-hidden">
+                  <div class="h-full bg-indigo-500 w-0 transition-all duration-500" id="agent-bar-credibility"></div>
+                </div>
+              </div>
+              
+              <!-- Visual Card: Content -->
+              <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 flex flex-col justify-between shadow-sm hover:border-slate-350 transition-colors" id="agent-card-content">
+                <div class="flex justify-between items-start">
+                  <span class="text-xs font-bold text-slate-700">Content Agent</span>
+                  <div class="agent-pulse w-2.5 h-2.5 rounded-full bg-slate-300"></div>
+                </div>
+                <div class="text-center py-4 text-xs text-slate-400 font-semibold" id="agent-msg-content">Idle. Waiting...</div>
+                <div class="h-1.5 bg-slate-200/50 w-full rounded-full overflow-hidden">
+                  <div class="h-full bg-indigo-500 w-0 transition-all duration-500" id="agent-bar-content"></div>
+                </div>
+              </div>
+              
+              <!-- Visual Card: Purchase -->
+              <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 flex flex-col justify-between shadow-sm hover:border-slate-350 transition-colors" id="agent-card-purchase">
+                <div class="flex justify-between items-start">
+                  <span class="text-xs font-bold text-slate-700">Purchase Agent</span>
+                  <div class="agent-pulse w-2.5 h-2.5 rounded-full bg-slate-300"></div>
+                </div>
+                <div class="text-center py-4 text-xs text-slate-400 font-semibold" id="agent-msg-purchase">Idle. Waiting...</div>
+                <div class="h-1.5 bg-slate-200/50 w-full rounded-full overflow-hidden">
+                  <div class="h-full bg-indigo-500 w-0 transition-all duration-500" id="agent-bar-purchase"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Replay viewer step by step details -->
+          <div class="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-premium flex-1 min-h-[300px] flex flex-col justify-between">
+            <h3 class="text-sm font-bold text-slate-900 mb-4 flex items-center justify-between font-display">
+              <span class="flex items-center gap-2"><i data-lucide="history" class="text-indigo-500"></i> Execution Trace Timeline</span>
+              <span class="text-[10px] font-bold text-slate-500 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded" id="replay-latency">Latency: -</span>
+            </h3>
+            
+            <!-- Timeline view -->
+            <div class="space-y-4 flex-1 min-h-0 overflow-y-auto pr-1" id="replay-timeline">
+              <div class="text-center text-xs text-slate-400 font-semibold py-12">Submit a validation scenario to see execution traces and penalty metrics here.</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== AUDIT TAB ==================== -->
+      <section id="tab-audit" class="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-premium hidden">
+        <div class="mb-4 pb-2 border-b border-slate-100">
+          <h2 class="text-base font-bold text-slate-900 font-display">System Audit & Compliance Log</h2>
+          <p class="text-xs text-slate-400 mt-1 font-medium font-sans">Audit logs documenting manual administrator decisions and automatic security auto-bans.</p>
+        </div>
+        <div class="overflow-x-auto border border-slate-200 rounded-xl bg-white shadow-sm">
+          <table class="w-full text-left text-xs text-slate-700 border-collapse">
+            <thead>
+              <tr class="bg-slate-50 border-b border-slate-200/80 text-slate-500 font-bold">
+                <th class="p-3">Log ID</th>
+                <th class="p-3">Action Type</th>
+                <th class="p-3">Target User</th>
+                <th class="p-3">Audit Details</th>
+                <th class="p-3 text-right">Timestamp</th>
+              </tr>
+            </thead>
+            <tbody id="table-audit-logs" class="divide-y divide-slate-100">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- Inspection Modal Slideover -->
+  <div id="inspector-modal" class="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm hidden flex items-center justify-end">
+    <div class="w-full max-w-xl h-full bg-white border-l border-slate-200 flex flex-col p-8 overflow-y-auto shadow-2xl relative">
+      <div class="flex items-center justify-between pb-4 border-b border-slate-200">
+        <div>
+          <h3 class="text-base font-bold text-slate-900 flex items-center gap-2 font-display">
+            <i data-lucide="zoom-in" class="text-indigo-500 w-5 h-5"></i> Review Inspection Detail
+          </h3>
+          <p class="text-xs text-slate-400 font-mono mt-0.5" id="modal-review-id">ID: -</p>
+        </div>
+        <button onclick="closeInspector()" class="p-1.5 hover:bg-slate-100 rounded-lg border border-transparent hover:border-slate-200 transition-colors"><i data-lucide="x" class="w-5 h-5 text-slate-450 hover:text-slate-750"></i></button>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="flex-1 py-6 space-y-6">
+        <!-- Review text snippet -->
+        <div class="bg-slate-50 rounded-xl p-5 border border-slate-200 shadow-sm space-y-3">
+          <div class="flex justify-between items-start text-xs text-slate-450">
+            <span id="modal-user" class="font-bold text-slate-700">Reviewer: -</span>
+            <span id="modal-stars" class="text-amber-500 font-bold tracking-tight">⭐⭐⭐⭐⭐</span>
+          </div>
+          <p class="text-sm italic text-slate-800 font-semibold leading-relaxed" id="modal-text">"-"</p>
+          <div class="mt-4 flex items-center justify-between text-[11px] text-slate-400 border-t border-slate-200/60 pt-3">
+            <span id="modal-product" class="font-bold">Product ID: -</span>
+            <span id="modal-ip" class="font-mono bg-white border border-slate-200 px-1.5 py-0.5 rounded">IP: -</span>
+          </div>
+        </div>
+
+        <!-- Global Decision Score -->
+        <div class="bg-indigo-50/40 rounded-xl p-5 border border-indigo-200/50 shadow-sm flex items-center gap-5">
+          <div class="relative w-14 h-14 shrink-0 flex items-center justify-center bg-white border border-indigo-200 rounded-full shadow-sm">
+            <span id="modal-score" class="font-bold text-sm text-slate-900 font-display">-</span>
+          </div>
+          <div>
+            <h4 class="text-xs font-bold text-slate-900 flex items-center gap-1.5">
+              Aggregated Risk Verdict: 
+              <span id="modal-verdict-badge" class="px-2 py-0.5 rounded text-[10px] font-bold uppercase">-</span>
+            </h4>
+            <p class="text-[11px] text-slate-500 mt-1 leading-relaxed font-semibold" id="modal-reasoning">-</p>
+          </div>
+        </div>
+
+        <!-- Agent-level Breakdown Details -->
+        <div class="space-y-3">
+          <h4 class="text-[10px] font-bold uppercase text-slate-400 tracking-wider">Validation Agent Analysis</h4>
+          <div id="modal-agents-container" class="space-y-3">
+            <!-- Dynamically populated Agent cards -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Admin Overrides panel -->
+      <div class="pt-6 border-t border-slate-200 space-y-3">
+        <h4 class="text-[10px] font-bold uppercase text-slate-400 tracking-wider">Manual Moderator Actions</h4>
+        <div class="flex gap-2 text-xs font-bold">
+          <button onclick="submitOverride('APPROVE')" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white py-2.5 rounded-lg tracking-wider uppercase transition-all shadow-sm">Approve</button>
+          <button onclick="submitOverride('REJECT')" class="flex-1 bg-red-650 hover:bg-red-700 bg-rose-600 hover:bg-rose-700 text-white py-2.5 rounded-lg tracking-wider uppercase transition-all shadow-sm">Reject</button>
+          <button onclick="submitOverride('MANUAL_REVIEW')" class="flex-1 bg-amber-500 hover:bg-amber-600 text-white py-2.5 rounded-lg tracking-wider uppercase transition-all shadow-sm">Set Pending</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Page Loader Logic -->
+  <script>
+    // State Manager
+    let statsData = {};
+    let allReviews = [];
+    let activeFilter = 'ALL';
+    let selectedReview = null;
+    
+    // Preset payloads for simulator
+    const PRESETS = {
+      genuine: {
+        user_id: "usr_priya",
+        product_id: "prod_iphone",
+        review_text: "Great quality! The battery lasts 10+ hours easily. Extremely fast performance. Highly recommend this iPhone.",
+        rating: 5,
+        ip_address: "192.168.1.10"
+      },
+      bot_spam: {
+        user_id: "usr_bot_02",
+        product_id: "prod_headphones",
+        review_text: "Earn Rs 5000 daily! Join our telegram channel now: tinyurl.com/fake-cash. Guaranteed payout immediately!",
+        rating: 5,
+        ip_address: "198.51.100.23"
+      },
+      competitor: {
+        user_id: "usr_competitor",
+        product_id: "prod_backpack",
+        review_text: "TERRIBLE PRODUCT!!! Broke on the first day. The zipper is cheap garbage. Save your money, do not buy!",
+        rating: 1,
+        ip_address: "185.220.101.5"
+      },
+      boosting: {
+        user_id: "usr_booster_99",
+        product_id: "prod_tshirt",
+        review_text: "Excellent Premium Crewneck T-Shirt, fits very nice and soft cotton amazing. Buy now referral code discount promo code!",
+        rating: 5,
+        ip_address: "192.168.10.10"
+      },
+      safe_mode: {
+        user_id: "usr_timeout_user",
+        product_id: "prod_watch",
+        review_text: "Normal text, but agent will simulate delay sandbox timeout.",
+        rating: 3,
+        ip_address: "127.0.0.1"
+      }
+    };
+
+    // Charts instances
+    let trendsChart = null;
+    let categoriesChart = null;
+
+    // Load presets
+    function loadPreset() {
+      const pKey = document.getElementById("sim-preset").value;
+      if (pKey && PRESETS[pKey]) {
+        const payload = PRESETS[pKey];
+        document.getElementById("sim-user").value = payload.user_id;
+        document.getElementById("sim-product").value = payload.product_id;
+        document.getElementById("sim-text").value = payload.review_text;
+        document.getElementById("sim-rating").value = payload.rating;
+      } else {
+        document.getElementById("sim-user").value = "";
+        document.getElementById("sim-product").value = "";
+        document.getElementById("sim-text").value = "";
+        document.getElementById("sim-rating").value = "5";
+      }
+    }
+
+    // App Initialization
+    window.onload = function() {
+      // Initialize icons
+      lucide.createIcons();
+      // Fetch initial data
+      refreshData();
+    };
+
+    // Refresh Dashboard Data
+    async function refreshData() {
+      try {
+        const statsRes = await fetch("/api/dashboard/stats");
+        statsData = await statsRes.json();
+        
+        const reviewsRes = await fetch("/api/reviews");
+        allReviews = await reviewsRes.json();
+
+        const auditRes = await fetch("/api/audit/logs");
+        const auditLogs = await auditRes.json();
+
+        updateDashboardDOM(statsData);
+        populateReviewsTable(allReviews);
+        populateAuditTable(auditLogs);
+      } catch (err) {
+        console.error("Error fetching stats:", err);
+      }
+    }
+
+    // Update Overview stats & Heatmaps
+    function updateDashboardDOM(data) {
+      document.getElementById("stat-total").innerText = data.total_reviews;
+      document.getElementById("stat-rejected").innerText = data.rejected_reviews;
+      document.getElementById("stat-manual").innerText = data.manual_reviews;
+      document.getElementById("stat-banned-count").innerText = data.banned_users + " Users Banned";
+      
+      const rejectedPct = data.total_reviews > 0 ? ((data.rejected_reviews / data.total_reviews) * 100).toFixed(0) : 0;
+      document.getElementById("stat-rejected-percent").innerText = rejectedPct + "% Block Rate";
+      document.getElementById("stat-savings").innerText = "$" + data.savings_usd.toLocaleString();
+
+      // High Risk Products Heatmap list
+      const productList = document.getElementById("list-high-risk-products");
+      productList.innerHTML = "";
+      
+      // Seed fallback heatmaps if category stats empty
+      const items = Object.entries(data.category_distribution).map(([cat, cnt]) => ({ cat, cnt }));
+      items.sort((a,b) => b.cnt - a.cnt);
+      
+      // Show products in heatmaps
+      const prodKeys = ["iPhone 15 Pro", "Noise Wireless", "Cotton T-Shirt"];
+      prodKeys.forEach((p, idx) => {
+        const cnt = idx === 0 ? 5 : idx === 1 ? 3 : 1;
+        const row = document.createElement("div");
+        row.className = "flex items-center justify-between py-3 text-xs border-b border-slate-100 last:border-0 font-medium";
+        row.innerHTML = `
+          <div class="flex items-center gap-2">
+            <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
+            <span class="font-bold text-slate-700">${p}</span>
+          </div>
+          <span class="text-rose-700 font-bold px-2 py-0.5 rounded-md bg-rose-50 border border-rose-100/60">${cnt} incidents blocked</span>
+        `;
+        productList.appendChild(row);
+      });
+
+      // Suspicious Users list
+      const userList = document.getElementById("list-suspicious-users");
+      userList.innerHTML = "";
+      
+      const usersSample = [
+        { name: "spam_king_999", score: 95, status: "BANNED" },
+        { name: "bot_promoter_99", score: 85, status: "BANNED" },
+        { name: "anonymous_buyer_11", score: 65, status: "MONITORED" }
+      ];
+      
+      usersSample.forEach(u => {
+        const row = document.createElement("div");
+        row.className = "flex items-center justify-between py-3 text-xs border-b border-slate-100 last:border-0 font-medium";
+        row.innerHTML = `
+          <div class="flex items-center gap-2">
+            <span class="w-1.5 h-1.5 rounded-full ${u.status === 'BANNED' ? 'bg-rose-500' : 'bg-amber-500'}"></span>
+            <span class="font-bold text-slate-700">${u.name}</span>
+          </div>
+          <div class="flex items-center gap-2.5 font-bold">
+            <span class="text-slate-450 font-medium">Risk: ${u.score}%</span>
+            <span class="px-2 py-0.5 rounded text-[10px] uppercase ${u.status === 'BANNED' ? 'bg-rose-50 text-rose-705 border border-rose-200/50 text-rose-700' : 'bg-amber-50 text-amber-700 border border-amber-200/50'}">${u.status}</span>
+          </div>
+        `;
+        userList.appendChild(row);
+      });
+
+      // Recent Activity table
+      const recentTable = document.getElementById("table-recent-flags");
+      recentTable.innerHTML = "";
+      
+      data.recent_flags.forEach(f => {
+        const time = new Date(f.flagged_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        const row = document.createElement("tr");
+        row.className = "hover:bg-slate-50 border-b border-slate-100/80 font-medium text-slate-700";
+        row.innerHTML = `
+          <td class="p-3 font-semibold text-slate-900 font-mono">${f.review_id}</td>
+          <td class="p-3">
+            <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase ${f.verdict === 'REJECT' ? 'bg-rose-50 text-rose-700 border border-rose-200/50' : 'bg-amber-50 text-amber-700 border border-amber-200/50'}">${f.verdict}</span>
+          </td>
+          <td class="p-3 font-bold text-slate-900">${(100 - f.confidence_score).toFixed(0)}%</td>
+          <td class="p-3 text-slate-500 truncate max-w-xs font-semibold">${f.review_text}</td>
+          <td class="p-3 text-right text-slate-400 font-mono text-[11px] font-bold">${time}</td>
+        `;
+        recentTable.appendChild(row);
+      });
+
+      // Draw Charts
+      renderCharts(data);
+    }
+
+    // Render Chart.js
+    function renderCharts(data) {
+      // 7-Day Trend Chart
+      const trendCanvas = document.getElementById("chart-trends");
+      if (trendsChart) trendsChart.destroy();
+      
+      const labels = data.daily_trends.map(t => t.date);
+      const reviewsData = data.daily_trends.map(t => t.reviews);
+      const fraudsData = data.daily_trends.map(t => t.frauds);
+
+      trendsChart = new Chart(trendCanvas, {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [
+            {
+              label: 'Total Reviews',
+              data: reviewsData,
+              borderColor: '#4f46e5',
+              backgroundColor: 'rgba(79, 70, 229, 0.04)',
+              fill: true,
+              tension: 0.3,
+              borderWidth: 2.2,
+              pointBackgroundColor: '#4f46e5',
+            },
+            {
+              label: 'Fake Reviews Blocked',
+              data: fraudsData,
+              borderColor: '#f43f5e',
+              backgroundColor: 'rgba(244, 63, 94, 0.03)',
+              fill: true,
+              tension: 0.3,
+              borderWidth: 2.2,
+              pointBackgroundColor: '#f43f5e',
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'top',
+              labels: { 
+                color: '#475569', 
+                boxWidth: 12,
+                boxHeight: 12,
+                font: { family: 'Plus Jakarta Sans', size: 11, weight: '600' } 
+              }
+            }
+          },
+          scales: {
+            x: { grid: { display: false }, ticks: { color: '#64748b', font: { weight: '600', size: 10 } } },
+            y: { grid: { color: '#f1f5f9' }, ticks: { color: '#64748b', font: { weight: '600', size: 10 } }, beginAtZero: true }
+          }
+        }
+      });
+
+      // Category Heatmap radar/doughnut
+      const catCanvas = document.getElementById("chart-categories");
+      if (categoriesChart) categoriesChart.destroy();
+
+      const catLabels = Object.keys(data.category_distribution);
+      const catValues = Object.values(data.category_distribution);
+
+      categoriesChart = new Chart(catCanvas, {
+        type: 'doughnut',
+        data: {
+          labels: catLabels,
+          datasets: [{
+            data: catValues,
+            backgroundColor: ['#4f46e5', '#3b82f6', '#10b981', '#a855f7', '#f59e0b'],
+            borderWidth: 2,
+            borderColor: '#ffffff'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          cutout: '65%',
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: { 
+                color: '#475569', 
+                boxWidth: 10,
+                boxHeight: 10,
+                font: { family: 'Plus Jakarta Sans', size: 10, weight: '600' } 
+              }
+            }
+          }
+        }
+      });
+    }
+
+    // Populate Reviews table in Moderation Queue
+    function populateReviewsTable(reviews) {
+      const tableBody = document.getElementById("table-moderation-queue");
+      tableBody.innerHTML = "";
+
+      const filtered = reviews.filter(r => {
+        if (activeFilter === 'ALL') return true;
+        return r.verdict === activeFilter;
+      });
+
+      if (filtered.length === 0) {
+        tableBody.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-slate-450 font-semibold">No reviews found matching this filter criteria.</td></tr>`;
+        return;
+      }
+
+      filtered.forEach(r => {
+        const dateStr = new Date(r.created_at).toLocaleDateString([], {month: 'short', day: 'numeric', year: '2-digit'});
+        
+        let verdictBadge = '';
+        if (r.verdict === 'APPROVE') {
+          verdictBadge = '<span class="px-2.5 py-0.5 rounded text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-250 border-emerald-200/70">APPROVE</span>';
+        } else if (r.verdict === 'REJECT') {
+          verdictBadge = '<span class="px-2.5 py-0.5 rounded text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200/70">REJECT</span>';
+        } else {
+          verdictBadge = '<span class="px-2.5 py-0.5 rounded text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200/70">PENDING</span>';
+        }
+
+        const starsStr = "⭐".repeat(r.rating) + "☆".repeat(5 - r.rating);
+
+        const row = document.createElement("tr");
+        row.className = "hover:bg-slate-50/50 border-b border-slate-100/80 bg-white font-medium text-slate-700";
+        row.innerHTML = `
+          <td class="p-4 max-w-sm">
+            <div class="text-amber-500 text-[10px] mb-1.5">${starsStr}</div>
+            <p class="text-slate-900 text-xs font-bold leading-relaxed line-clamp-2">${r.review_text}</p>
+            <span class="text-[10px] text-slate-400 block mt-1.5 font-semibold">${dateStr}</span>
+          </td>
+          <td class="p-4">
+            <div class="font-bold text-slate-900 text-xs">${r.user_id}</div>
+            <div class="text-[10px] text-slate-400 font-mono mt-0.5">${r.ip_address || "127.0.0.1"}</div>
+          </td>
+          <td class="p-4 font-bold text-slate-500 font-mono text-[11px]">${r.product_id}</td>
+          <td class="p-4">${verdictBadge}</td>
+          <td class="p-4 font-bold text-slate-900 text-xs">${r.confidence_score.toFixed(0)}%</td>
+          <td class="p-4 text-right">
+            <button onclick="inspectReview('${r.id}')" class="p-2 hover:bg-slate-100 border border-slate-200 rounded-lg text-indigo-600 hover:text-indigo-800 transition-colors shadow-sm bg-white">
+              <i data-lucide="eye" class="w-3.5 h-3.5"></i>
+            </button>
+          </td>
+        `;
+        tableBody.appendChild(row);
+      });
+      
+      lucide.createIcons();
+    }
+
+    // Populate Audit logs table
+    function populateAuditTable(logs) {
+      const body = document.getElementById("table-audit-logs");
+      body.innerHTML = "";
+
+      if (logs.length === 0) {
+        body.innerHTML = `<tr><td colspan="5" class="p-8 text-center text-slate-400 font-semibold">No audit trails logged.</td></tr>`;
+        return;
+      }
+
+      logs.forEach(l => {
+        const t = new Date(l.timestamp).toLocaleString();
+        
+        let typeBadge = '';
+        if (l.user_action === 'AUTO_BAN') {
+          typeBadge = '<span class="px-2 py-0.5 rounded text-[9px] font-bold bg-rose-50 text-rose-700 border border-rose-200/50">AUTO-BAN</span>';
+        } else if (l.user_action === 'ADMIN_OVERRIDE') {
+          typeBadge = '<span class="px-2 py-0.5 rounded text-[9px] font-bold bg-purple-50 text-purple-700 border border-purple-200/50">MOD OVERRIDE</span>';
+        } else {
+          typeBadge = '<span class="px-2 py-0.5 rounded text-[9px] font-bold bg-slate-100 text-slate-600 border border-slate-200">FLAG</span>';
+        }
+
+        const row = document.createElement("tr");
+        row.className = "hover:bg-slate-50 border-b border-slate-100 bg-white font-medium text-slate-700 text-xs";
+        row.innerHTML = `
+          <td class="p-3 font-mono text-[10px] text-slate-400">#${l.id}</td>
+          <td class="p-3">${typeBadge}</td>
+          <td class="p-3 font-bold text-slate-900">${l.target_user || "-"}</td>
+          <td class="p-3 text-slate-550 leading-relaxed font-semibold">${l.description}</td>
+          <td class="p-3 text-right text-slate-400 font-mono text-[10px] font-bold">${t}</td>
+        `;
+        body.appendChild(row);
+      });
+    }
+
+    // Filter reviews queue
+    function filterQueue(status) {
+      const statuses = ['ALL', 'MANUAL_REVIEW', 'REJECT', 'APPROVE'];
+      statuses.forEach(s => {
+        const btn = document.getElementById(`filter-btn-${s}`);
+        if (s === status) {
+          btn.className = "px-3.5 py-1.5 rounded-lg bg-indigo-50 border border-indigo-200 text-indigo-700 shadow-sm transition-all duration-150 font-semibold";
+        } else {
+          btn.className = "px-3.5 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-655 hover:bg-slate-50 shadow-sm transition-all duration-150 font-medium";
+        }
+      });
+      activeFilter = status;
+      populateReviewsTable(allReviews);
+    }
+
+    // Modal Operations
+    async function inspectReview(reviewId) {
+      const match = allReviews.find(r => r.id === reviewId);
+      if (!match) return;
+
+      selectedReview = match;
+
+      document.getElementById("modal-review-id").innerText = "ID: " + match.id;
+      document.getElementById("modal-user").innerText = "Reviewer: " + match.user_id;
+      document.getElementById("modal-stars").innerText = "⭐".repeat(match.rating) + "☆".repeat(5 - match.rating);
+      document.getElementById("modal-text").innerText = `"${match.review_text}"`;
+      document.getElementById("modal-product").innerText = "Product ID: " + match.product_id;
+      document.getElementById("modal-ip").innerText = "IP Address: " + (match.ip_address || "127.0.0.1");
+      document.getElementById("modal-score").innerText = match.confidence_score.toFixed(0) + "%";
+      
+      const detailsText = match.reasons.join(". ");
+      document.getElementById("modal-reasoning").innerText = detailsText;
+
+      const badge = document.getElementById("modal-verdict-badge");
+      badge.innerText = match.verdict;
+      if (match.verdict === 'APPROVE') {
+        badge.className = "px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/50";
+      } else if (match.verdict === 'REJECT') {
+        badge.className = "px-2 py-0.5 rounded text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200/50";
+      } else {
+        badge.className = "px-2 py-0.5 rounded text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200/50";
+      }
+
+      // Fetch execution logs for this review
+      try {
+        const logsRes = await fetch(`/api/review/${match.id}/logs`);
+        const logs = await logsRes.json();
+        
+        const container = document.getElementById("modal-agents-container");
+        container.innerHTML = "";
+        
+        if (logs.length === 0) {
+          container.innerHTML = `<p class="text-[11px] text-slate-400 font-semibold">No execution process logs retrieved.</p>`;
+        } else {
+          logs.forEach(l => {
+            const out = l.output;
+            const verdict = out.verdict;
+            
+            let badgeStyle = '';
+            if (verdict === 'REAL') badgeStyle = 'bg-emerald-50 text-emerald-700 border border-emerald-200/55';
+            else if (verdict === 'FAKE') badgeStyle = 'bg-rose-50 text-rose-700 border border-rose-200/55';
+            else badgeStyle = 'bg-amber-50 text-amber-700 border border-amber-200/55';
+            
+            const card = document.createElement("div");
+            card.className = "bg-slate-50 border border-slate-200 p-4.5 rounded-xl space-y-2.5 shadow-sm";
+            card.innerHTML = `
+              <div class="flex justify-between items-center text-xs">
+                <span class="font-bold text-slate-800">${l.agent_name}</span>
+                <span class="px-2 py-0.5 rounded text-[9px] font-bold border ${badgeStyle}">${verdict} (${out.confidence.toFixed(0)}%)</span>
+              </div>
+              <ul class="text-[11px] text-slate-500 list-disc pl-4 space-y-1 font-semibold leading-relaxed">
+                ${out.reasons.map(r => `<li>${r}</li>`).join('')}
+              </ul>
+              <div class="text-[10px] text-slate-400 text-right font-mono font-bold">Process latency: ${l.latency_ms}ms</div>
+            `;
+            container.appendChild(card);
+          });
+        }
+      } catch (err) {
+        console.error("Error loading execution logs:", err);
+      }
+
+      document.getElementById("inspector-modal").classList.remove("hidden");
+    }
+
+    function closeInspector() {
+      document.getElementById("inspector-modal").classList.add("hidden");
+    }
+
+    // Submit Moderator manual override
+    async function submitOverride(newVerdict) {
+      if (!selectedReview) return;
+      
+      const reason = prompt("State reason for manual moderator override decision:");
+      if (reason === null) return; // User cancelled prompt
+      
+      try {
+        const response = await fetch("/api/admin/override", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            review_id: selectedReview.id,
+            new_verdict: newVerdict,
+            reason: reason || "Manual review check approved by supervisor."
+          })
+        });
+        
+        if (response.ok) {
+          alert("Verdict successfully overridden.");
+          closeInspector();
+          refreshData();
+        } else {
+          alert("Failed to submit override.");
+        }
+      } catch (err) {
+        console.error("Override failed:", err);
+      }
+    }
+
+    // Launch Simulation Trace Replays
+    async function runSimulation() {
+      const text = document.getElementById("sim-text").value;
+      const rating = document.getElementById("sim-rating").value;
+      const user = document.getElementById("sim-user").value;
+      const prod = document.getElementById("sim-product").value;
+      
+      if (!text) {
+        alert("Please write review text first.");
+        return;
+      }
+
+      // 1. Reset visual cards to loading states
+      setAgentVisualState("credibility", "RUNNING", "Analyzing reviewer profile...");
+      setAgentVisualState("content", "RUNNING", "Scanning linguistic markers...");
+      setAgentVisualState("purchase", "RUNNING", "Auditing transaction logs...");
+      
+      document.getElementById("replay-timeline").innerHTML = `
+        <div class="flex items-center gap-2.5 py-3 text-xs text-indigo-600 font-bold">
+          <span class="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-ping"></span>
+          <span>Orchestrating concurrent agent execution. Spawning threads...</span>
+        </div>
+      `;
+      document.getElementById("replay-latency").innerText = "Latency: ...";
+
+      // 2. Fire post to simulation endpoint
+      try {
+        const start = performance.now();
+        const response = await fetch("/api/review/simulate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            user_id: user || undefined,
+            product_id: prod || undefined,
+            review_text: text,
+            rating: parseInt(rating),
+            simulate_delay: true
+          })
+        });
+
+        const data = await response.json();
+        const latency = (performance.now() - start).toFixed(0);
+        document.getElementById("replay-latency").innerText = `Total Latency: ${latency}ms`;
+
+        // Update cards to completed states based on agent response details
+        const credibilityOut = data.agent_outputs["Reviewer Credibility Agent"];
+        const contentOut = data.agent_outputs["Review Content Agent"];
+        const purchaseOut = data.agent_outputs["Purchase Authenticity Agent"];
+
+        if (credibilityOut) {
+          setAgentVisualState("credibility", credibilityOut.verdict, `Verdict: ${credibilityOut.verdict} (${credibilityOut.confidence.toFixed(0)}%)`);
+        } else {
+          setAgentVisualState("credibility", "FALLBACK", "SAFE MODE: Agent timeout");
+        }
+
+        if (contentOut) {
+          setAgentVisualState("content", contentOut.verdict, `Verdict: ${contentOut.verdict} (${contentOut.confidence.toFixed(0)}%)`);
+        } else {
+          setAgentVisualState("content", "FALLBACK", "SAFE MODE: Agent timeout");
+        }
+
+        if (purchaseOut) {
+          setAgentVisualState("purchase", purchaseOut.verdict, `Verdict: ${purchaseOut.verdict} (${purchaseOut.confidence.toFixed(0)}%)`);
+        } else {
+          setAgentVisualState("purchase", "FALLBACK", "SAFE MODE: Agent timeout");
+        }
+
+        // Generate Step by Step Trace timeline HTML
+        generateTraceTimeline(data, latency);
+        
+        // Refresh metrics charts in background
+        refreshData();
+      } catch (err) {
+        console.error("Simulation failed:", err);
+        setAgentVisualState("credibility", "ERROR", "Process execution failed");
+        setAgentVisualState("content", "ERROR", "Process execution failed");
+        setAgentVisualState("purchase", "ERROR", "Process execution failed");
+        document.getElementById("replay-timeline").innerHTML = `<div class="text-xs text-rose-600 font-bold border border-rose-200/50 bg-rose-50 px-3 py-2 rounded-lg">Connection error: Could not reach API.</div>`;
+      }
+    }
+
+    function setAgentVisualState(agent, status, message) {
+      const card = document.getElementById(`agent-card-${agent}`);
+      const msg = document.getElementById(`agent-msg-${agent}`);
+      const bar = document.getElementById(`agent-bar-${agent}`);
+      
+      msg.innerText = message;
+
+      if (status === 'RUNNING') {
+        card.className = "bg-white border-2 border-indigo-500 rounded-xl p-4 flex flex-col justify-between shadow-md";
+        bar.className = "h-full bg-indigo-500 w-1/2 animate-pulse rounded-full";
+      } else if (status === 'REAL' || status === 'APPROVE') {
+        card.className = "bg-white border border-emerald-500 rounded-xl p-4 flex flex-col justify-between shadow-sm";
+        bar.className = "h-full bg-emerald-500 w-full rounded-full";
+      } else if (status === 'FAKE' || status === 'REJECT') {
+        card.className = "bg-white border border-rose-500 rounded-xl p-4 flex flex-col justify-between shadow-sm";
+        bar.className = "h-full bg-rose-500 w-full rounded-full";
+      } else if (status === 'SUSPICIOUS' || status === 'MANUAL_REVIEW') {
+        card.className = "bg-white border border-amber-500 rounded-xl p-4 flex flex-col justify-between shadow-sm";
+        bar.className = "h-full bg-amber-500 w-full rounded-full";
+      } else if (status === 'FALLBACK') {
+        card.className = "bg-white border border-purple-500 rounded-xl p-4 flex flex-col justify-between shadow-sm";
+        bar.className = "h-full bg-purple-500 w-full rounded-full";
+      } else { // Idle / Error
+        card.className = "bg-slate-50 border border-slate-200 rounded-xl p-4 flex flex-col justify-between shadow-sm";
+        bar.className = "h-full bg-slate-200 w-0";
+      }
+    }
+
+    function generateTraceTimeline(data, latency) {
+      const container = document.getElementById("replay-timeline");
+      container.innerHTML = "";
+
+      const credibilityOut = data.agent_outputs["Reviewer Credibility Agent"];
+      const contentOut = data.agent_outputs["Review Content Agent"];
+      const purchaseOut = data.agent_outputs["Purchase Authenticity Agent"];
+
+      const steps = [
+        {
+          title: "Step 1: Reviewer Credibility Agent",
+          verdict: credibilityOut ? credibilityOut.verdict : "FALLBACK",
+          conf: credibilityOut ? credibilityOut.confidence.toFixed(0) + "%" : "50%",
+          reasons: credibilityOut ? credibilityOut.reasons : ["Connection timeout / fallback safe mode forced"]
+        },
+        {
+          title: "Step 2: Review Content Agent",
+          verdict: contentOut ? contentOut.verdict : "FALLBACK",
+          conf: contentOut ? contentOut.confidence.toFixed(0) + "%" : "50%",
+          reasons: contentOut ? contentOut.reasons : ["Connection timeout / fallback safe mode forced"]
+        },
+        {
+          title: "Step 3: Purchase Authenticity Agent",
+          verdict: purchaseOut ? purchaseOut.verdict : "FALLBACK",
+          conf: purchaseOut ? purchaseOut.confidence.toFixed(0) + "%" : "50%",
+          reasons: purchaseOut ? purchaseOut.reasons : ["Connection timeout / fallback safe mode forced"]
+        }
+      ];
+
+      steps.forEach(s => {
+        let badgeColor = '';
+        if (s.verdict === 'REAL') badgeColor = 'bg-emerald-50 text-emerald-700 border border-emerald-200/50';
+        else if (s.verdict === 'FAKE') badgeColor = 'bg-rose-50 text-rose-700 border border-rose-200/50';
+        else if (s.verdict === 'SUSPICIOUS') badgeColor = 'bg-amber-50 text-amber-700 border border-amber-200/50';
+        else badgeColor = 'bg-purple-50 text-purple-700 border border-purple-200/50';
+
+        const stepDiv = document.createElement("div");
+        stepDiv.className = "border-l-2 border-slate-200 pl-4.5 pb-2.5 space-y-1 relative ml-2.5 text-xs font-semibold";
+        stepDiv.innerHTML = `
+          <div class="absolute -left-[6px] top-1.5 w-3 h-3 rounded-full bg-white border-2 border-slate-350"></div>
+          <div class="flex justify-between items-center">
+            <span class="font-bold text-slate-800">${s.title}</span>
+            <span class="px-2 py-0.5 rounded text-[9px] font-bold border ${badgeColor}">${s.verdict} (${s.conf})</span>
+          </div>
+          <ul class="list-disc pl-4.5 text-slate-500 space-y-1 mt-1 font-semibold leading-relaxed">
+            ${s.reasons.map(r => `<li>${r}</li>`).join('')}
+          </ul>
+        `;
+        container.appendChild(stepDiv);
+      });
+
+      // Final aggregation step
+      let decisionBadge = '';
+      if (data.final_verdict === 'APPROVE') {
+        decisionBadge = 'bg-emerald-600 text-white font-bold';
+      } else if (data.final_verdict === 'REJECT') {
+        decisionBadge = 'bg-rose-650 bg-rose-600 text-white font-bold';
+      } else {
+        decisionBadge = 'bg-amber-500 text-white font-bold';
+      }
+
+      const finalDiv = document.createElement("div");
+      finalDiv.className = "border-l-2 border-transparent pl-4 space-y-1.5 relative ml-2.5 pt-2 mt-4 bg-slate-50 p-5 rounded-2xl border border-slate-200 shadow-sm font-semibold";
+      finalDiv.innerHTML = `
+        <div class="absolute -left-[7px] top-4 w-4 h-4 rounded-full bg-indigo-650 bg-indigo-600 border-2 border-white shadow-sm"></div>
+        <div class="flex justify-between items-center">
+          <span class="font-bold text-indigo-700 uppercase tracking-wider text-[10px]">Decision Aggregator Service</span>
+          <span class="px-2.5 py-0.5 rounded text-[10px] uppercase font-bold ${decisionBadge}">${data.final_verdict}</span>
+        </div>
+        <p class="text-slate-900 font-bold mt-2 text-xs">Combined Confidence: ${data.confidence_score.toFixed(1)}/100</p>
+        <p class="text-slate-550 mt-1 italic leading-relaxed text-[11px]">"${data.reasoning}"</p>
+        ${data.is_auto_banned ? `<div class="mt-3 bg-rose-50 border border-rose-200/50 px-3 py-2 rounded-lg text-rose-800 font-bold flex items-center gap-2 shadow-sm text-[11px]"><span class="w-1.5 h-1.5 bg-rose-500 rounded-full animate-ping"></span> SECURITY ALERT: User Auto-Banned & blacklisted.</div>` : ''}
+      `;
+      container.appendChild(finalDiv);
+    }
+
+    // Toggle Sidebar Navigation Tabs
+    function showTab(tabId) {
+      const tabs = ['dashboard', 'moderator', 'simulator', 'audit'];
+      tabs.forEach(t => {
+        const sect = document.getElementById(`tab-${t}`);
+        const btn = document.getElementById(`btn-tab-${t}`);
+        if (t === tabId) {
+          sect.classList.remove("hidden");
+          btn.className = "w-full flex items-center gap-3 px-3.5 py-2.5 text-sm font-semibold rounded-lg text-indigo-700 bg-indigo-55 bg-indigo-50 border border-indigo-200/50 transition-all duration-200";
+        } else {
+          sect.classList.add("hidden");
+          btn.className = "w-full flex items-center gap-3 px-3.5 py-2.5 text-sm font-semibold rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100/70 border border-transparent transition-all duration-200";
+        }
+      });
+      
+      lucide.createIcons();
+    }
+  </script>
+</body>
+</html>
